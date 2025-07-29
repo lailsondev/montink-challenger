@@ -8,7 +8,7 @@ use PDO;
 class Product
 {
     private $conn;
-    private $table_name = "produtos";
+    private $tableName = "produtos";
 
     public function __construct()
     {
@@ -17,7 +17,7 @@ class Product
 
     public function create($name)
     {
-        $query = "INSERT INTO " . $this->table_name . " (nome) VALUES (:nome)";
+        $query = "INSERT INTO {$this->tableName} (nome) VALUES (:nome)";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(":nome", $name);
@@ -30,7 +30,7 @@ class Product
 
     public function update($id, $name)
     {
-        $query = "UPDATE " . $this->table_name . " SET nome = :nome WHERE id = :id";
+        $query = "UPDATE {$this->tableName} SET nome = :nome WHERE id = :id";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(":id", $id);
@@ -42,7 +42,7 @@ class Product
     public function find($id)
     {
         $query = "SELECT p.*, GROUP_CONCAT(CONCAT(s.id, ':', s.variacao, ':', s.quantidade, ':', s.preco)) AS variacoes_estoque
-                  FROM " . $this->table_name . " p
+                  FROM {$this->tableName} p
                   LEFT JOIN estoque s ON p.id = s.produto_id
                   WHERE p.id = :id
                   GROUP BY p.id";
@@ -55,12 +55,12 @@ class Product
             $variations = explode(',', $product['variacoes_estoque']);
             $product['variacoes'] = [];
             foreach ($variations as $variation) {
-                list($var_id, $var_name, $var_qty, $var_price) = explode(':', $variation);
+                list($varId, $varName, $varQty, $varPrice) = explode(':', $variation);
                 $product['variacoes'][] = [
-                    'id' => (int)$var_id,
-                    'nome' => $var_name,
-                    'quantidade' => (int)$var_qty,
-                    'preco' => (float)$var_price
+                    'id' => (int)$varId,
+                    'nome' => $varName,
+                    'quantidade' => (int)$varQty,
+                    'preco' => (float)$varPrice
                 ];
             }
         } else {
@@ -73,7 +73,7 @@ class Product
     public function all()
     {
         $query = "SELECT p.*, GROUP_CONCAT(CONCAT(s.id, ':', s.variacao, ':', s.quantidade, ':', s.preco)) AS variacoes_estoque
-                  FROM " . $this->table_name . " p
+                  FROM {$this->tableName} p
                   LEFT JOIN estoque s ON p.id = s.produto_id
                   GROUP BY p.id";
         $stmt = $this->conn->prepare($query);
@@ -85,12 +85,12 @@ class Product
                 $variations = explode(',', $product['variacoes_estoque']);
                 $product['variacoes'] = [];
                 foreach ($variations as $variation) {
-                    list($var_id, $var_name, $var_qty, $var_price) = explode(':', $variation);
+                    list($varId, $varName, $varQty, $varPrice) = explode(':', $variation);
                     $product['variacoes'][] = [
-                        'id' => (int)$var_id,
-                        'nome' => $var_name,
-                        'quantidade' => (int)$var_qty,
-                        'preco' => (float)$var_price
+                        'id' => (int)$varId,
+                        'nome' => $varName,
+                        'quantidade' => (int)$varQty,
+                        'preco' => (float)$varPrice
                     ];
                 }
             } else {
@@ -103,7 +103,7 @@ class Product
 
     public function delete($id)
     {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+        $query = "DELETE FROM {$this->tableName} WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $id);
         return $stmt->execute();

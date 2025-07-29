@@ -39,12 +39,12 @@ class ProductController
                 exit();
             }
 
-            $product_id = $this->productModel->create($name);
+            $productId = $this->productModel->create($name);
 
-            if ($product_id) {
+            if ($productId) {
                 foreach ($variations as $variation) {
                     if (!empty($variation['name']) && $variation['quantity'] >= 0 && isset($variation['price']) && $variation['price'] >= 0) {
-                        $this->stockModel->create($product_id, $variation['name'], $variation['quantity'], $variation['price']);
+                        $this->stockModel->create($productId, $variation['name'], $variation['quantity'], $variation['price']);
                     } else {
                         error_log(MSG_INVALID_VARIATION_TO_CREATE . json_encode($variation));
                     }
@@ -85,7 +85,7 @@ class ProductController
             $id = $_POST['id'] ?? null;
             $name = $_POST['name'] ?? '';
             $variations = $_POST['variations'] ?? [];
-            $deleted_variations = $_POST['deleted_variations'] ?? '';
+            $deletedVariations = $_POST['deleted_variations'] ?? '';
 
             if (!$id || empty($name)) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_PRODUCT_DATA_INVALID_TO_UPDATE];
@@ -93,13 +93,13 @@ class ProductController
                 exit();
             }
 
-            $product_updated = $this->productModel->update($id, $name);
+            $productUpdated = $this->productModel->update($id, $name);
 
-            if (!empty($deleted_variations)) {
-                $deleted_ids = explode(',', $deleted_variations);
-                foreach ($deleted_ids as $stock_id) {
-                    if (is_numeric($stock_id)) {
-                        $this->stockModel->delete($stock_id);
+            if (!empty($deletedVariations)) {
+                $deletedIds = explode(',', $deletedVariations);
+                foreach ($deletedIds as $stockId) {
+                    if (is_numeric($stockId)) {
+                        $this->stockModel->delete($stockId);
                     }
                 }
             }
@@ -116,7 +116,7 @@ class ProductController
                 }
             }
 
-            if ($product_updated) {
+            if ($productUpdated) {
                 $_SESSION['message'] = ['type' => 'success', 'text' => MSG_PRODUCT_AND_VARIATION_UPDATED_SUCESSFULLY];
                 header('Location: /products');
                 exit();

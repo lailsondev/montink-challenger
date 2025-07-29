@@ -1,15 +1,17 @@
 <?php
 
+//GERAL
 define('MSG_PAGE_NOT_FOUND', 'Página não encontrada!');
+define('MSG_INVALID_CEP_OR_NOT_FOUND', 'CEP inválido ou não encontrado.');
+define('MSG_ALL_FIELDS_IS_REQUIRED', 'Por favor, preencha todos os campos obrigatórios.');
 
 //WEBHOOK
 define('MSG_INVALID_TOKEN', 'Token de segurança inválido.');
 define('MSG_INVALID_JSON', 'Dados JSON inválidos.');
 define('MSG_FIELDS_ORDER_ID_AND_STATUS_IS_REQUIRED', 'Campos "order_id" e "status" são obrigatórios.');
+define('MSG_SEND_CONFIRMATION_EMAIL_CREATED_SUCCESSFULLY', 'criado');
+define('MSG_SEND_CONFIRMATION_ARRAY_OPTIONS', ['aprovado','cancelado','enviado','entregue']);
 
-//GERAL
-define('MSG_INVALID_CEP_OR_NOT_FOUND', 'CEP inválido ou não encontrado.');
-define('MSG_ALL_FIELDS_IS_REQUIRED', 'Por favor, preencha todos os campos obrigatórios.');
 
 //CARRINHO
 define('MSG_INVALID_ITEM_FOR_CART', 'Item inválido para adicionar ao carrinho.');

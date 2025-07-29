@@ -11,38 +11,38 @@ class Cart
         }
     }
 
-    public function add($product_id, $stock_id, $quantity, $price, $product_name, $variation_name)
+    public function add($productId, $stockId, $quantity, $price, $productName, $variationName)
     {
-        $item_key = $product_id . '_' . $stock_id;
-        if (isset($_SESSION['cart'][$item_key])) {
-            $_SESSION['cart'][$item_key]['quantity'] += $quantity;
+        $itemKey = $productId . '_' . $stockId;
+        if (isset($_SESSION['cart'][$itemKey])) {
+            $_SESSION['cart'][$itemKey]['quantity'] += $quantity;
         } else {
-            $_SESSION['cart'][$item_key] = [
-                'product_id' => $product_id,
-                'stock_id' => $stock_id,
-                'product_name' => $product_name,
-                'variation_name' => $variation_name,
+            $_SESSION['cart'][$itemKey] = [
+                'product_id' => $productId,
+                'stock_id' => $stockId,
+                'product_name' => $productName,
+                'variation_name' => $variationName,
                 'price' => $price,
                 'quantity' => $quantity
             ];
         }
     }
 
-    public function update($item_key, $quantity)
+    public function update($itemKey, $quantity)
     {
-        if (isset($_SESSION['cart'][$item_key])) {
+        if (isset($_SESSION['cart'][$itemKey])) {
             if ($quantity <= 0) {
-                unset($_SESSION['cart'][$item_key]);
+                unset($_SESSION['cart'][$itemKey]);
             } else {
-                $_SESSION['cart'][$item_key]['quantity'] = $quantity;
+                $_SESSION['cart'][$itemKey]['quantity'] = $quantity;
             }
         }
     }
 
-    public function remove($item_key)
+    public function remove($itemKey)
     {
-        if (isset($_SESSION['cart'][$item_key])) {
-            unset($_SESSION['cart'][$item_key]);
+        if (isset($_SESSION['cart'][$itemKey])) {
+            unset($_SESSION['cart'][$itemKey]);
         }
     }
 

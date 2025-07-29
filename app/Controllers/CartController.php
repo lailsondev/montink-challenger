@@ -159,20 +159,20 @@ class CartController
 
     public function checkout()
     {
-        $cart_items = $this->cart->getItems();
-        if (empty($cart_items)) {
+        $cartItems = $this->cart->getItems();
+        if (empty($cartItems)) {
             $_SESSION['message'] = ['type' => 'info', 'text' => MSG_CART_IS_EMPTY];
             header('Location: /products');
             exit();
         }
 
         $subtotal = $this->cart->getTotal();
-        $discounted_subtotal = $this->cart->getDiscountedTotal();
-        $freight = $this->freightService->calculateFreight($discounted_subtotal);
+        $discountedSubtotal = $this->cart->getDiscountedTotal();
+        $freight = $this->freightService->calculateFreight($discountedSubtotal);
         $coupon = $this->cart->getCoupon();
-        $total = $discounted_subtotal + $freight;
+        $total = $discountedSubtotal + $freight;
 
-        $address_data = $_SESSION['address_data'] ?? [];
+        $addressData = $_SESSION['address_data'] ?? [];
         unset($_SESSION['address_data']);
 
         require __DIR__ . '/../Views/cart/checkout.php';
@@ -181,19 +181,19 @@ class CartController
     public function processCheckout()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $cart_items = $this->cart->getItems();
-            if (empty($cart_items)) {
+            $cartItems = $this->cart->getItems();
+            if (empty($cartItems)) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_CART_IS_EMPTY];
                 header('Location: /products');
                 exit();
             }
 
-            $customer_email = $_POST['email'] ?? '';
+            $customerEmail = $_POST['email'] ?? '';
             $cep = $_POST['cep'] ?? '';
             $number = $_POST['number'] ?? '';
             $complement = $_POST['complement'] ?? '';
 
-            if (empty($customer_email) || empty($cep) || empty($number)) {
+            if (empty($customerEmail) || empty($cep) || empty($number)) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_ALL_FIELDS_IS_REQUIRED];
                 $_SESSION['address_data'] = $_POST;
                 header('Location: /cart/checkout');
@@ -229,7 +229,7 @@ class CartController
                     $address['bairro'],
                     $address['localidade'],
                     $address['uf'],
-                    $customer_email,
+                    $customerEmail,
                     $coupon_id
                 );
 
@@ -237,9 +237,9 @@ class CartController
                     throw new \Exception("Erro ao criar o pedido.");
                 }
 
-                foreach ($cart_items as $item_key => $item) {
-                    $stock_updated = $this->stockModel->decreaseStock($item['stock_id'], $item['quantity']);
-                    if (!$stock_updated) {
+                foreach ($cartItems as $itemKey => $item) {
+                    $stockUpdated = $this->stockModel->decreaseStock($item['stock_id'], $item['quantity']);
+                    if (!$stockUpdated) {
                         throw new \Exception("Estoque insuficiente para o item: " . $item['product_name'] . " (" . $item['variation_name'] . "). Por favor, ajuste a quantidade.");
                     }
                     $this->orderModel->addOrderItem($order_id, $item['product_id'], $item['stock_id'], $item['quantity'], $item['price']);
@@ -249,9 +249,9 @@ class CartController
 
                 $this->cart->clear();
 
-                $order_data_for_email = $this->orderModel->find($order_id);
-                $order_items_for_email = $this->orderModel->getOrderItems($order_id);
-                $this->emailService->sendOrderConfirmationEmail($customer_email, $order_data_for_email, $order_items_for_email);
+                $orderDataForEmail = $this->orderModel->find($order_id);
+                $orderItemsForEmail = $this->orderModel->getOrderItems($order_id);
+                $this->emailService->sendOrderConfirmationEmail($customerEmail, $orderDataForEmail, $orderItemsForEmail, MSG_SEND_CONFIRMATION_EMAIL_CREATED_SUCCESSFULLY);
 
 
                 $_SESSION['message'] = ['type' => 'success', 'text' =>MSG_ORDER_PLACEMENT_SUCCESS . $order_id];
@@ -271,31 +271,31 @@ class CartController
     public function applyCoupon()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $coupon_code = $_POST['coupon_code'] ?? '';
+            $couponCode = $_POST['coupon_code'] ?? '';
 
-            if (empty($coupon_code)) {
+            if (empty($couponCode)) {
                 $this->cart->removeCoupon();
                 $_SESSION['message'] = ['type' => 'info', 'text' => MSG_COUPON_REMOVED];
                 header('Location: /cart/view');
                 exit();
             }
 
-            $coupon = $this->couponModel->findByCode($coupon_code);
+            $coupon = $this->couponModel->findByCode($couponCode);
             if (!$coupon) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_INVALID_COUPON];
                 header('Location: /cart/view');
                 exit();
             }
 
-            $subtotal_before_discount = $this->cart->getTotal();
-            if (!$this->couponModel->isValid($coupon, $subtotal_before_discount)) {
+            $subtotalBeforeDiscount = $this->cart->getTotal();
+            if (!$this->couponModel->isValid($coupon, $subtotalBeforeDiscount)) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_INVALID_COUPON_OR_EXPIRED];
                 header('Location: /cart/view');
                 exit();
             }
 
             $this->cart->setCoupon($coupon);
-            $_SESSION['message'] = ['type' => 'success', 'text' => 'Cupom "' . htmlspecialchars($coupon_code) . '" aplicado com sucesso!'];
+            $_SESSION['message'] = ['type' => 'success', 'text' => 'Cupom "' . htmlspecialchars($couponCode) . '" aplicado com sucesso!'];
             header('Location: /cart/view');
             exit();
         }

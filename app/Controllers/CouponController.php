@@ -30,17 +30,17 @@ class CouponController
             $code = $_POST['code'] ?? '';
             $type = $_POST['type'] ?? '';
             $value = $_POST['value'] ?? 0;
-            $valid_from = $_POST['valid_from'] ?? '';
-            $valid_to = $_POST['valid_to'] ?? '';
-            $min_value = $_POST['min_value'] ?? null;
+            $validFrom = $_POST['valid_from'] ?? '';
+            $validTo = $_POST['valid_to'] ?? '';
+            $minValue = $_POST['min_value'] ?? null;
 
-            if (empty($code) || empty($type) || $value <= 0 || empty($valid_from) || empty($valid_to)) {
+            if (empty($code) || empty($type) || $value <= 0 || empty($validFrom) || empty($validTo)) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_ALL_FIELDS_COUPON_REQUIRED];
                 header('Location: /coupons/create');
                 exit();
             }
 
-            if ($this->couponModel->create($code, $type, $value, $valid_from, $valid_to, $min_value)) {
+            if ($this->couponModel->create($code, $type, $value, $validFrom, $validTo, $minValue)) {
                 $_SESSION['message'] = ['type' => 'success', 'text' => MSG_COUPON_CREATED_SUCCESS];
                 header('Location: /coupons');
                 exit();
