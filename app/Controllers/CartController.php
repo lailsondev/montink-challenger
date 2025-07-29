@@ -40,38 +40,38 @@ class CartController
     public function add()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $product_id = $_POST['product_id'] ?? null;
-            $stock_id = $_POST['stock_id'] ?? null;
+            $productId = $_POST['product_id'] ?? null;
+            $stockId = $_POST['stock_id'] ?? null;
             $quantity = (int)($_POST['quantity'] ?? 1);
 
-            if (!$product_id || !$stock_id || $quantity <= 0) {
+            if (!$productId || !$stockId || $quantity <= 0) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_INVALID_ITEM_FOR_CART];
                 header('Location: /products');
                 exit();
             }
 
-            $product = $this->productModel->find($product_id);
+            $product = $this->productModel->find($productId);
             if (!$product) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_PRODUCT_NOT_FOUND];
                 header('Location: /products');
                 exit();
             }
 
-            $selected_variation = null;
+            $selectedVariation = null;
             foreach ($product['variacoes'] as $variation) {
-                if ($variation['id'] == $stock_id) {
-                    $selected_variation = $variation;
+                if ($variation['id'] == $stockId) {
+                    $selectedVariation = $variation;
                     break;
                 }
             }
 
-            if (!$selected_variation) {
+            if (!$selectedVariation) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_PRODUCT_VARIATION_NOT_FOUND];
                 header('Location: /products');
                 exit();
             }
 
-            if ($selected_variation['quantidade'] < $quantity) {
+            if ($selectedVariation['quantidade'] < $quantity) {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_INSUFFICIENT_STOCK_FOR_VARIATION_SELECTED];
                 header('Location: /products');
                 exit();
@@ -79,11 +79,11 @@ class CartController
 
             $this->cart->add(
                 $product['id'],
-                $selected_variation['id'],
+                $selectedVariation['id'],
                 $quantity,
-                $selected_variation['preco'],
+                $selectedVariation['preco'],
                 $product['nome'],
-                $selected_variation['nome']
+                $selectedVariation['nome']
             );
 
             $_SESSION['message'] = ['type' => 'success', 'text' => MSG_PRODUCT_ADD_TO_CART];
@@ -94,7 +94,7 @@ class CartController
 
     public function view()
     {
-        $cart_items = $this->cart->getItems();
+        $cartItems = $this->cart->getItems();
         $subtotal = $this->cart->getTotal();
         $discounted_subtotal = $this->cart->getDiscountedTotal();
         $freight = $this->freightService->calculateFreight($discounted_subtotal);
@@ -106,26 +106,26 @@ class CartController
     public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $item_key = $_POST['item_key'] ?? null;
+            $itemKey = $_POST['item_key'] ?? null;
             $quantity = (int)($_POST['quantity'] ?? 0);
 
-            if ($item_key !== null && $quantity >= 0) {
-                list($product_id, $stock_id) = explode('_', $item_key);
-                $product = $this->productModel->find($product_id);
+            if ($itemKey !== null && $quantity >= 0) {
+                list($productId, $stockId) = explode('_', $itemKey);
+                $product = $this->productModel->find($productId);
                 if ($product) {
-                    $selected_variation = null;
+                    $selectedVariation = null;
                     foreach ($product['variacoes'] as $variation) {
-                        if ($variation['id'] == $stock_id) {
-                            $selected_variation = $variation;
+                        if ($variation['id'] == $stockId) {
+                            $selectedVariation = $variation;
                             break;
                         }
                     }
 
-                    if ($selected_variation) {
-                        if ($quantity > $selected_variation['quantidade']) {
+                    if ($selectedVariation) {
+                        if ($quantity > $selectedVariation['quantidade']) {
                             $_SESSION['message'] = ['type' => 'error', 'text' => MSG_QTTY_EXCEEDED_FOR_VARIATION];
                         } else {
-                            $this->cart->update($item_key, $quantity);
+                            $this->cart->update($itemKey, $quantity);
                             $_SESSION['message'] = ['type' => 'success', 'text' => MSG_CART_UPDATED];
                         }
                     } else {
@@ -145,9 +145,9 @@ class CartController
     public function remove()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $item_key = $_POST['item_key'] ?? null;
-            if ($item_key !== null) {
-                $this->cart->remove($item_key);
+            $itemKey = $_POST['item_key'] ?? null;
+            if ($itemKey !== null) {
+                $this->cart->remove($itemKey);
                 $_SESSION['message'] = ['type' => 'success', 'text' => MSG_ITEM_REMOVED_TO_CART];
             } else {
                 $_SESSION['message'] = ['type' => 'error', 'text' => MSG_INVALID_ITEM_FOR_REMOVE];
@@ -218,7 +218,7 @@ class CartController
             $this->dbConnection->beginTransaction();
 
             try {
-                $order_id = $this->orderModel->create(
+                $orderId = $this->orderModel->create(
                     $subtotal,
                     $freight,
                     $total,
@@ -233,7 +233,7 @@ class CartController
                     $coupon_id
                 );
 
-                if (!$order_id) {
+                if (!$orderId) {
                     throw new \Exception("Erro ao criar o pedido.");
                 }
 
@@ -242,19 +242,19 @@ class CartController
                     if (!$stockUpdated) {
                         throw new \Exception("Estoque insuficiente para o item: " . $item['product_name'] . " (" . $item['variation_name'] . "). Por favor, ajuste a quantidade.");
                     }
-                    $this->orderModel->addOrderItem($order_id, $item['product_id'], $item['stock_id'], $item['quantity'], $item['price']);
+                    $this->orderModel->addOrderItem($orderId, $item['product_id'], $item['stock_id'], $item['quantity'], $item['price']);
                 }
 
                 $this->dbConnection->commit();
 
                 $this->cart->clear();
 
-                $orderDataForEmail = $this->orderModel->find($order_id);
-                $orderItemsForEmail = $this->orderModel->getOrderItems($order_id);
+                $orderDataForEmail = $this->orderModel->find($orderId);
+                $orderItemsForEmail = $this->orderModel->getOrderItems($orderId);
                 $this->emailService->sendOrderConfirmationEmail($customerEmail, $orderDataForEmail, $orderItemsForEmail, MSG_SEND_CONFIRMATION_EMAIL_CREATED_SUCCESSFULLY);
 
 
-                $_SESSION['message'] = ['type' => 'success', 'text' =>MSG_ORDER_PLACEMENT_SUCCESS . $order_id];
+                $_SESSION['message'] = ['type' => 'success', 'text' =>MSG_ORDER_PLACEMENT_SUCCESS . $orderId];
                 header('Location: /');
                 exit();
 
