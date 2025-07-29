@@ -33,7 +33,7 @@ git clone https://github.com/lailsondev/montink-challenger
 
 ## ⚙️ Configure o `.env`
 
-DB_HOST=localhost
+<pre>DB_HOST=localhost
 DB_NAME=montink
 DB_USER=root
 DB_PASS=root
@@ -45,7 +45,7 @@ SMTP_PASSWORD=senha
 SMTP_FROM_EMAIL=from@example.com
 SMTP_FROM_NAME="Loja Teste Montink"
 
-WEBHOOK_SECRET_TOKEN=base64_secret_token
+WEBHOOK_SECRET_TOKEN=base64_secret_token</pre>
 
 ## 🚀 Suba o Servidor
 `php -S localhost:8000 -t public`
